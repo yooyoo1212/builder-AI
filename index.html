@@ -1,6 +1,196 @@
 <html>
 <head></head>
 <body>
-새로운 웹페이지
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>귀여운 하트 감지기</title>
+  <style>
+    body {
+      background-color: #fff0f6;
+      font-family: 'Comic Sans MS', 'Noto Sans KR', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 10px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #ff6b81;
+      margin-bottom: 10px;
+    }
+
+    .character {
+      width: 120px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #ff6b81;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 10px 0;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #e05670;
+    }
+
+    #webcam-container {
+      margin-top: 20px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #label-container {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      text-align: center;
+      color: #ff6b81;
+    }
+
+    .hearts {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      pointer-events: none;
+      display: none;
+    }
+
+    .heart {
+      width: 40px;
+      height: 40px;
+      background: url('https://emojicdn.elk.sh/❤️') no-repeat center/contain;
+      display: inline-block;
+      margin: 0 5px;
+      animation: pop 1s ease-out forwards;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 0; top: -100px; }
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      button {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <img class="character" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="귀여운 캐릭터">
+  <h1>하트 감지기 💕</h1>
+  <button onclick="init()">시작하기</button>
+  <div id="webcam-container"></div>
+  <div id="label-container"></div>
+  <div class="hearts" id="heartEffect"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+  <script>
+    const URL = "https://teachablemachine.withgoogle.com/models/DgzkxzDyp/";
+    let model, webcam, labelContainer, maxPredictions;
+
+    async function init() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
+
+      model = await tmImage.load(modelURL, metadataURL);
+      maxPredictions = model.getTotalClasses();
+
+      webcam = new tmImage.Webcam(200, 200, true);
+      await webcam.setup();
+      await webcam.play();
+      window.requestAnimationFrame(loop);
+
+      document.getElementById("webcam-container").appendChild(webcam.canvas);
+      labelContainer = document.getElementById("label-container");
+
+      for (let i = 0; i < maxPredictions; i++) {
+        labelContainer.appendChild(document.createElement("div"));
+      }
+    }
+
+    async function loop() {
+      webcam.update();
+      await predict();
+      window.requestAnimationFrame(loop);
+    }
+
+    function showHearts(type) {
+      const heartContainer = document.getElementById("heartEffect");
+      heartContainer.innerHTML = '';
+      heartContainer.style.display = "block";
+
+      if (type === "three") {
+        for (let i = 0; i < 3; i++) {
+          const heart = document.createElement("div");
+          heart.className = "heart";
+          heart.style.animationDelay = `${i * 0.2}s`;
+          heartContainer.appendChild(heart);
+        }
+      } else if (type === "shower") {
+        for (let i = 0; i < 10; i++) {
+          const heart = document.createElement("div");
+          heart.className = "heart";
+          heart.style.animationDelay = `${i * 0.1}s`;
+          heartContainer.appendChild(heart);
+        }
+      }
+
+      setTimeout(() => {
+        heartContainer.style.display = "none";
+      }, 2000);
+    }
+
+    async function predict() {
+      const prediction = await model.predict(webcam.canvas);
+      for (let i = 0; i < maxPredictions; i++) {
+        const className = prediction[i].className;
+        const prob = prediction[i].probability;
+        labelContainer.childNodes[i].innerHTML = `${className}: ${(prob * 100).toFixed(1)}%`;
+
+        if (className.includes("손가락하트") && prob > 0.5) {
+          showHearts("three");
+        } else if (className.includes("양손하트") && prob > 0.5) {
+          showHearts("shower");
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+
+
+</body>
+</html>
+
+</body>
+</html>
+
+
+</body>
+</html>
+
+
 </body>
 </html>
